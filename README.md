@@ -1,1 +1,0 @@
-# software-graph-docs
