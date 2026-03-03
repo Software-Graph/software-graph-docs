@@ -1,76 +1,51 @@
 # Propagation Engine
 
-The Propagation Engine computes downstream impact from contract changes.
+The propagation engine is implemented as a CI-backed workflow, not just a conceptual graph walk.
 
+## Trigger Path
 
+1. A service PR merges to `dev`.
+2. Service CI invokes the reusable `mesh-gate` workflow from `sg-mesh`.
+3. `mesh-gate` runs `sg gate <service>`.
+4. If meaningful source changes exist, `mesh-gate` runs `sg propagate <service>`.
 
-## Trigger
+## Breaking-Change Filtering
 
-A propagation begins when:
+`sg propagate` performs smart filtering:
 
-- An OpenAPI schema changes
-- A dependency version updates
-- A node interface mutates
+- If no contract diff is available, propagation is skipped unless forced.
+- If only non-breaking changes are found, propagation is skipped.
+- If breaking changes are found, only dependents consuming affected tag groups are targeted.
 
+Dry-run support is available with:
 
-
-## Algorithm (Conceptual)
-
-1. Identify changed node.
-2. Traverse outgoing edges.
-3. Mark dependent nodes as impacted.
-4. Fork impacted subgraph into Dev Mesh.
-5. Apply automated code updates (future agent layer).
-6. Execute tests.
-7. Evaluate coverage thresholds.
-8. Decide promotion.
-
-
-
-## Guarantees
-
-The system aims to guarantee:
-
-- No silent contract breakage.
-- Deterministic update ordering.
-- Explicit promotion boundaries.
-- Traceable change history.
-
-Propagation is structural, not manual.
-
-## Propagation Flow
-
-```mermaid
-graph LR
-    Change[Contract Change in B]
-    B[Service B]
-    A[Service A]
-    C[Service C]
-    DevMesh[Dev Mesh Fork]
-
-    B --> A
-    B --> C
-    Change --> B
-    A --> DevMesh
-    C --> DevMesh
+```bash
+sg propagate <service> --dry-run
 ```
 
-## Subgraph Fork
+## Wave Artifact
 
-```mermaid
-graph TD
-    B[Service B v2]
-    A[Service A v1]
-    C[Service C v1]
+When propagation is needed, a wave file is written to:
 
-    B --> A
-    B --> C
-
-    subgraph Dev Fork
-        A2[Service A v2]
-        C2[Service C v2]
-    end
-
-    A --> A2
-    C --> C2
+```text
+propagations/<source>-YYYYMMDD-HHMMSS.json
 ```
+
+That wave includes source metadata, targets, tags, and issue references once created.
+
+## Issue and Dispatch Flow
+
+After wave generation, `mesh-gate`:
+
+1. Creates an actionable issue in each impacted target repo.
+2. Creates a linked visibility issue in the meta-repo.
+3. Cross-links both issues.
+4. Dispatches `repository_dispatch` (`mesh-propagation`) to each target repo.
+
+Target repos handle that dispatch in CI and can auto-close tracking issues when verification passes.
+
+## Practical Guarantees
+
+- Breaking changes are visible to impacted dependents.
+- Source and meta tracking stay linked.
+- Non-breaking edits avoid unnecessary propagation noise.

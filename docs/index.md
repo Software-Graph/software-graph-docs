@@ -1,88 +1,45 @@
 # Software Graph
 
-> Contract-driven. Propagation-aware. Deterministic.
+> Typed mesh architecture with deterministic propagation and tracked submodule pointers.
 
-Software Graph is an experimental architecture model for building software as an explicit dependency graph of services and contracts.
+Software Graph is a multi-repo system managed as a single dependency graph.
 
-### At its core:
+- Each service/package is a node.
+- Dependencies are edges with type and tag-level context.
+- Contract changes are analyzed, then propagated to affected dependents.
+- The meta-repo tracks exact submodule commits for reproducible mesh state.
 
-- Every service is a node.
-- Every dependency is an edge.
-- Every contract is a first-class artifact.
-- Every change propagates deterministically.
+## Current Operating Model
+
+Software Graph currently runs on two long-lived mesh branches:
+
+- `dev`: integration branch for all active development and propagation.
+- `main`: stable branch that tracks only promoted `main` commits from each submodule.
+
+### What Happens on `dev`
+
+1. You work in a feature branch inside one submodule.
+2. You open a PR to that submodule's `dev` branch.
+3. On merge, CI runs tests and `mesh-gate`.
+4. If there are breaking contract changes, propagation waves and linked issues are created.
+5. The submodule pushes trigger notify workflow -> meta-repo sync workflow -> pointer update in meta `dev`.
+
+### What Happens on `main`
+
+- Promotion is explicit.
+- Submodules are merged to `main` first.
+- Meta-repo `main` pointers are synced to submodule `origin/main` heads.
+
+## Where to Start
+
+- Workflow: [Operations / Workflow](/operations/workflow)
+- Issue creation and closure flow: [Operations / Propagation Lifecycle](/operations/propagation-lifecycle)
+- Pointer sync internals: [Operations / Submodule Sync](/operations/submodule-sync)
+- Ruleset setup: [Operations / Branch Protection](/operations/branch-protection)
 
 ## Core Principles
 
-### 1. Contracts First
-
-All services expose explicit OpenAPI specifications.
-
-Contracts are not documentation — they are the source of truth.
-
-Schema changes trigger downstream propagation.
-
-### 2. Graph-Native Design
-
-Services form a directed graph:
-
-- Nodes represent services or components.
-- Edges represent dependency relationships.
-- Changes propagate along outgoing edges.
-
-The system treats architecture as data.
-
-### 3. Dev/Prod Mesh Separation
-
-Two meshes exist:
-
-- **Dev Mesh** — experimental propagation space
-- **Prod Mesh** — stable validated graph
-
-When a contract changes:
-
-1. A forked subgraph is created in dev.
-2. Dependent services are updated automatically.
-3. Tests and coverage gates are executed.
-4. Only validated graphs are promoted to prod.
-
-### 4. Self-Contained Authentication
-
-Authentication is designed to avoid central bottlenecks.
-
-- JWT access tokens
-- Public JWKS verification
-- Structured scopes
-- Audience enforcement
-- Optional introspection for debugging
-
-Auth is graph-aware.
-
-## Why This Exists
-
-Modern software development:
-
-- Breaks contracts silently
-- Lacks global dependency awareness
-- Requires manual coordination
-- Treats architecture as documentation
-
-Software Graph treats architecture as executable structure.
-
-## Status
-
-Early experimental phase.
-
-Design and contract modeling are underway.
-
-Automation and propagation engines in progress.
-
-## Philosophy
-
-Software should be:
-
-- Traceable
-- Deterministic
-- Self-describing
-- Propagation-aware
-
-The graph is the system.
+- Contracts are first-class and diffed semantically.
+- Propagation is structural and tag-aware.
+- Breaking changes are visible across both source and target repos.
+- The graph state is recorded as code and commits, not tribal knowledge.

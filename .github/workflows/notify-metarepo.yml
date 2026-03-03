@@ -1,8 +1,7 @@
-# Notify meta-repo when this repo's dev branch is updated
+# Notify meta-repo when this repo's mesh branch is updated
 #
 # This triggers the Software-Graph meta-repo to update its submodule ref,
 # so pushing here automatically updates the meta-repo's tracked commit.
-# Main-branch sync is handled by `sg push main` (no notification needed).
 #
 # Requires: MESH_TOKEN secret (same token used for cross-repo operations)
 
@@ -12,6 +11,11 @@ on:
   push:
     branches:
       - dev
+      - main
+
+concurrency:
+  group: notify-metarepo-${{ github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   notify:
@@ -22,6 +26,8 @@ jobs:
           # Use MESH_TOKEN - the same PAT used for cross-repo issue creation
           GH_TOKEN: ${{ secrets.MESH_TOKEN }}
         run: |
+          set -euo pipefail
+
           # Extract repo name from github.repository (e.g., "Software-Graph/jb-auth" -> "jb-auth")
           REPO_NAME="${GITHUB_REPOSITORY#*/}"
           BRANCH="${GITHUB_REF_NAME}"
@@ -29,7 +35,9 @@ jobs:
           echo "Notifying meta-repo: $REPO_NAME updated on $BRANCH"
           
           # Send repository_dispatch to meta-repo
-          curl -X POST \
+          curl --fail-with-body --silent --show-error \
+            --retry 3 --retry-delay 2 --retry-connrefused \
+            -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $GH_TOKEN" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
