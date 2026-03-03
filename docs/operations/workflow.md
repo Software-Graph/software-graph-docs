@@ -6,7 +6,7 @@ This is the intended day-to-day workflow for Software Graph using `sg` commands.
 
 - `dev`: integration branch for active development and propagation.
 - `main`: stable branch for promoted changes.
-- Feature branches: per-service branches created from `origin/dev`.
+- Feature branches: for submodules and meta-repo changes, created from `origin/dev`.
 
 ## Daily Development Flow
 
@@ -68,6 +68,42 @@ sg merge <service> --pr <number>
 
 On merge, service CI runs and the mesh workflow may propagate breaking changes.
 
+## Meta-Repo Changes to `dev`
+
+Use this when changing meta files (for example `sg-mesh.yaml`, `contracts/`, CI workflows, or top-level docs).
+
+### 1. Create a meta feature branch
+
+```bash
+sg branch meta --name feature/meta-<topic>
+```
+
+If you started editing on `dev`/`main` by mistake and want to keep those uncommitted edits:
+
+```bash
+sg branch meta --name feature/meta-<topic> --from-current
+```
+
+### 2. Commit meta changes
+
+```bash
+sg commit meta -m "chore(meta): ..."
+```
+
+### 3. Open meta PR to `dev`
+
+```bash
+sg pr meta --base dev
+```
+
+`sg pr meta` pushes the current meta branch first, then opens the PR.
+
+### 4. Merge the meta PR
+
+```bash
+sg merge meta --pr <number> --base dev --squash
+```
+
 ## After Merge to `dev`
 
 - `mesh-gate` handles gate + propagation logic.
@@ -120,6 +156,10 @@ sg status
 sg pull dev
 sg checkout dev
 sg checkout main
+sg branch meta --name <branch> [--from-current]
+sg commit meta -m "message"
+sg pr meta --base dev
+sg merge meta --pr <number> --base dev --squash
 sg promote
 sg merge-all --base main --head dev --merge
 sg pr meta --base main --allow-submodule-pointers
