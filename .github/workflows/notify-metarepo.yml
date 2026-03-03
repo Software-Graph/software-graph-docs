@@ -1,7 +1,8 @@
-# Notify meta-repo when this repo's dev or main branch is updated
+# Notify meta-repo when this repo's dev branch is updated
 #
 # This triggers the Software-Graph meta-repo to update its submodule ref,
 # so pushing here automatically updates the meta-repo's tracked commit.
+# Main-branch sync is handled by `sg push main` (no notification needed).
 #
 # Requires: MESH_TOKEN secret (same token used for cross-repo operations)
 
@@ -11,7 +12,6 @@ on:
   push:
     branches:
       - dev
-      - main
 
 jobs:
   notify:
