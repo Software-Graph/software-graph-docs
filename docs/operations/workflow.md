@@ -41,6 +41,9 @@ sg prepr <service>
 
 This runs the local CI dry-run path (`test -> gate -> propagate preview`) for the service.
 
+Important: `sg prepr` currently supports services/packages defined in `sg-mesh.yaml`.
+If a repo is outside the mesh graph (for example `software-graph-docs` today), run its native checks directly instead.
+
 ### 4. Push feature branch
 
 ```bash
