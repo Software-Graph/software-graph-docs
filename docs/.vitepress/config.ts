@@ -25,6 +25,15 @@ export default withMermaid({
         ]
       },
       {
+        text: "Operations",
+        items: [
+          { text: "Workflow", link: "/operations/workflow" },
+          { text: "Propagation Lifecycle", link: "/operations/propagation-lifecycle" },
+          { text: "Submodule Sync", link: "/operations/submodule-sync" },
+          { text: "Branch Protection", link: "/operations/branch-protection" }
+        ]
+      },
+      {
         text: "Services",
         items: [
           { text: "Auth Service", link: "/services/auth" },
@@ -34,4 +43,3 @@ export default withMermaid({
     ]
   }
 })
-

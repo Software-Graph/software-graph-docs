@@ -1,86 +1,52 @@
 # Architecture Overview
 
-Software Graph models software systems as directed graphs.
+Software Graph combines three layers:
 
-Each node represents a service or component.
-
-Each edge represents a dependency.
-
-
+1. Service graph modeling (`sg-mesh.yaml`) for nodes and dependency edges.
+2. Contract extraction + diffing for interface-level change detection.
+3. Operational workflows (CI, propagation, and pointer sync) that keep repos aligned.
 
 ## Node Types
 
-Nodes may represent:
+Common node kinds in the mesh include:
 
-- Backend services (OpenAPI-based)
-- Frontend applications
-- Internal libraries
-- Data stores
-- Auth providers
+- `python-api`
+- `react-spa`
+- `python-sdk`
+- `node-sdk`
+- infrastructure dependencies
 
-Not all nodes expose OpenAPI contracts.  
-Only network boundaries require formal API contracts.
-
-
+Not every node exposes OpenAPI, but every node can participate in dependency traversal.
 
 ## Edge Semantics
 
-Edges are directional.
+Edges are directional and typed.
 
-If Service A depends on Service B:
+If `A -> B`, then `A` consumes `B`.
+A change in `B` may require updates in `A`.
 
-A → B
+Edges can also carry tag-group information, which enables selective propagation when only specific API areas are breaking.
 
-A consumes B’s contract.
+## Branch-Scoped Mesh State
 
-When B changes, A may require modification.
+The mesh is represented by the meta-repo branch plus pinned submodule commits:
 
-Edges define propagation paths.
+- On `dev`, pointers should reference each submodule's `dev` line.
+- On `main`, pointers should reference each submodule's `main` line.
 
+Submodule pointer updates are event-driven by GitHub Actions and recorded as normal commits in the meta-repo.
 
-
-## Dual Mesh Model
-
-Two parallel meshes exist:
-
-- Dev Mesh
-- Prod Mesh
-
-Changes are introduced into Dev Mesh.
-
-Propagation, validation, and testing occur.
-
-Only validated graphs are promoted to Prod Mesh.
-
-
-
-## Deterministic Evolution
-
-Architecture changes follow a deterministic sequence:
-
-1. Contract mutation
-2. Dependency traversal
-3. Subgraph fork
-4. Code adaptation
-5. Test execution
-6. Coverage validation
-7. Promotion decision
-
-Software evolution becomes structured rather than reactive.
-
-## Example Service Graph
+## Operational Architecture
 
 ```mermaid
-graph TD
-    Auth[Auth Service]
-    Payments[Payments Service]
-    Orders[Orders Service]
-    Frontend[Frontend App]
-    DB[(Database)]
-
-    Frontend --> Orders
-    Orders --> Payments
-    Orders --> Auth
-    Payments --> Auth
-    Orders --> DB
+flowchart LR
+    Feature["Feature branch in submodule"] --> PR["PR to submodule dev"]
+    PR --> Merge["Merge to dev"]
+    Merge --> CI["Service CI + mesh-gate"]
+    CI --> Prop["Propagation wave + linked issues"]
+    Merge --> Notify["notify-metarepo workflow"]
+    Notify --> Sync["Meta sync-submodules workflow"]
+    Sync --> Pointer["Meta dev pointer commit"]
 ```
+
+For concrete command flows, see [Operations / Workflow](/operations/workflow).
