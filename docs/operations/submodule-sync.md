@@ -4,17 +4,18 @@ The meta-repo tracks submodules by commit SHA. Since Git submodules do not track
 
 ## How It Works
 
-1. A submodule receives a push on `dev` or `main`.
+1. A submodule receives a push on `dev`.
 2. The submodule's `notify-metarepo.yml` sends `repository_dispatch` to `Software-Graph/Software-Graph`.
 3. Meta-repo `sync-submodules.yml` runs on that dispatch.
-4. It fast-forwards targeted submodule(s) to `origin/<branch>`.
-5. If pointers changed, it commits and pushes updated refs in the meta-repo.
+4. It fast-forwards targeted submodule(s) to `origin/dev`.
+5. If pointers changed, it commits and pushes updated refs in meta `dev`.
+6. Meta `main` pointers are promoted later via a `dev -> main` PR.
 
 ## Why Event-Driven (No Cron)
 
 - Immediate pointer updates after real changes.
 - No periodic polling load.
-- Better branch fidelity (`dev` events update `dev`, `main` events update `main`).
+- Single source of truth for pointer movement (`dev` only).
 
 ## Concurrency Behavior
 
@@ -23,13 +24,13 @@ The meta-repo tracks submodules by commit SHA. Since Git submodules do not track
 - group: `sync-<branch>`
 - `cancel-in-progress: true`
 
-When many submodules update quickly, older runs are canceled and the latest run performs the effective sync.
+When many submodules update quickly, older runs are canceled and the latest `dev` run performs the effective sync.
 
 ## Safety and Guards
 
-- Only `dev` and `main` are accepted by sync workflow.
+- Only `dev` is accepted by sync workflow.
 - Notify workflow skips meta-repo self-dispatch to avoid loops.
-- Manual `workflow_dispatch` is available for recovery (`branch` + optional specific `submodule`).
+- Manual `workflow_dispatch` is available for recovery on `dev` (optional specific `submodule`).
 
 ## Required Secret
 

@@ -71,7 +71,7 @@ On merge, service CI runs and the mesh workflow may propagate breaking changes.
 ## After Merge to `dev`
 
 - `mesh-gate` handles gate + propagation logic.
-- Each submodule push triggers `notify-metarepo`.
+- Each submodule `dev` push triggers `notify-metarepo`.
 - Meta-repo `sync-submodules` updates pointer commits on `dev`.
 
 To update your local mesh:
@@ -82,17 +82,35 @@ sg pull dev
 
 ## Promotion Flow (`dev` -> `main`)
 
-1. Promote each submodule through its normal PR process to `main`.
-2. Sync meta `main` pointers to submodule `origin/main` heads:
+1. Open submodule promotion PRs:
 
 ```bash
-sg push main
+sg promote
+```
+
+2. Merge submodule promotion PRs:
+
+```bash
+sg merge-all --base main --head dev --merge
+```
+
+3. Promote meta-repo pointers from `dev` to `main`:
+
+```bash
+sg pr meta --base main --allow-submodule-pointers
+sg merge meta --pr <number> --base main --squash
+```
+
+4. Tag the known-good mesh combination:
+
+```bash
+sg tag <version>
 ```
 
 Notes:
 
-- `sg push main` updates meta pointers; it does not force submodule `dev -> main` promotion.
-- If `main` is protected, open a PR for the pointer-sync commit if direct push is blocked.
+- `main` pointer updates should come from the meta `dev -> main` PR path.
+- `sg push main` remains a legacy/manual recovery path only.
 
 ## Fast Command Reference
 
@@ -102,6 +120,10 @@ sg status
 sg pull dev
 sg checkout dev
 sg checkout main
+sg promote
+sg merge-all --base main --head dev --merge
+sg pr meta --base main --allow-submodule-pointers
+sg tag <version>
 
 # per-service feature flow
 sg branch <service> --name <branch>

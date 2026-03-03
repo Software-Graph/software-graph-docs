@@ -1,7 +1,7 @@
-# Notify meta-repo when this repo's mesh branch is updated
+# Notify meta-repo when this repo's dev branch is updated
 #
 # This triggers the Software-Graph meta-repo to update its submodule ref,
-# so pushing here automatically updates the meta-repo's tracked commit.
+# so dev pushes automatically update the meta-repo's tracked dev pointer.
 #
 # Requires: MESH_TOKEN secret (same token used for cross-repo operations)
 
@@ -11,7 +11,6 @@ on:
   push:
     branches:
       - dev
-      - main
 
 concurrency:
   group: notify-metarepo-${{ github.ref_name }}
@@ -19,6 +18,8 @@ concurrency:
 
 jobs:
   notify:
+    # This file lives in the meta-repo as a template, so avoid self-dispatch loops.
+    if: github.repository != 'Software-Graph/Software-Graph'
     runs-on: ubuntu-latest
     steps:
       - name: Trigger meta-repo sync
