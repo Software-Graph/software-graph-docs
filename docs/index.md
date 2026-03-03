@@ -22,13 +22,14 @@ Software Graph currently runs on two long-lived mesh branches:
 2. You open a PR to that submodule's `dev` branch.
 3. On merge, CI runs tests and `mesh-gate`.
 4. If there are breaking contract changes, propagation waves and linked issues are created.
-5. The submodule pushes trigger notify workflow -> meta-repo sync workflow -> pointer update in meta `dev`.
+5. The submodule push triggers notify workflow -> meta-repo sync workflow -> pointer update in meta `dev`.
 
 ### What Happens on `main`
 
 - Promotion is explicit.
 - Submodules are merged to `main` first.
-- Meta-repo `main` pointers are synced to submodule `origin/main` heads.
+- Then meta-repo opens a `dev -> main` PR that carries pointer updates from `dev`.
+- That merged state can be tagged with `sg tag <version>` as a known-good mesh snapshot.
 
 ## Where to Start
 

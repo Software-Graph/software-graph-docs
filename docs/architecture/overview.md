@@ -35,6 +35,7 @@ The mesh is represented by the meta-repo branch plus pinned submodule commits:
 - On `main`, pointers should reference each submodule's `main` line.
 
 Submodule pointer updates are event-driven by GitHub Actions and recorded as normal commits in the meta-repo.
+The auto-sync lane is `dev`; `main` pointer updates are promoted from meta `dev` via PR.
 
 ## Operational Architecture
 
@@ -47,6 +48,8 @@ flowchart LR
     Merge --> Notify["notify-metarepo workflow"]
     Notify --> Sync["Meta sync-submodules workflow"]
     Sync --> Pointer["Meta dev pointer commit"]
+    Pointer --> Promote["Meta PR: dev -> main (pointers)"]
+    Promote --> Tag["sg tag <version>"]
 ```
 
 For concrete command flows, see [Operations / Workflow](/operations/workflow).
