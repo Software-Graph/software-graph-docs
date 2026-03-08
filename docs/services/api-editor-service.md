@@ -188,3 +188,11 @@ All document routes are scoped under `/v1/projects/{project_id}/documents`.
 | `GET` | `/v1/projects/{project_id}/editor-status` | Get active editors and LLM lock status. |
 
 Clients should send heartbeats regularly to stay visible. Sessions expire automatically if heartbeats stop.
+
+---
+
+## Deployment Notes
+
+- Production rollouts run Alembic migrations through a dedicated Argo hook Job before the app Deployment is updated.
+- In Kubernetes, the service skips startup migrations and relies on the hook Job instead.
+- Successful migration hook Jobs are deleted automatically after completion, so not finding a `Job` later is normal when the sync was healthy.
