@@ -228,3 +228,11 @@ Introspection (`POST /auth/introspect`) is available for debugging and edge-case
 - `clientSecret` is returned only at registration time. Store it securely immediately.
 - Introspection requires a valid service-level bearer token (`serviceBearer` security scheme).
 - Tokens include `jti` for revocation tracking if needed.
+
+---
+
+## Deployment Notes
+
+- Production rollouts run database migrations through a dedicated Argo hook Job before the app Deployment is updated.
+- In Kubernetes, the app pod skips startup migrations; local/default startup behavior can still run migrations directly.
+- Successful production migration hook Jobs are deleted automatically after they complete, so their absence after a healthy sync is expected.
