@@ -5,9 +5,9 @@ The propagation engine is implemented as a CI-backed workflow, not just a concep
 ## Trigger Path
 
 1. A service PR merges to `dev`.
-2. Service CI invokes the reusable `mesh-gate` workflow from `sg-mesh`.
-3. `mesh-gate` runs `sg gate <service>`.
-4. If meaningful source changes exist, `mesh-gate` runs `sg propagate <service>`.
+2. Service CI invokes the reusable workflow from the `Software-Graph` meta repo.
+3. That centralized workflow installs the pinned released `sg-mesh` tooling, runs `sg gate <service>`, and handles propagation orchestration.
+4. If meaningful source changes exist, the centralized gate flow runs `sg propagate <service>`.
 
 ## Breaking-Change Filtering
 
@@ -35,7 +35,7 @@ That wave includes source metadata, targets, tags, and issue references once cre
 
 ## Issue and Dispatch Flow
 
-After wave generation, `mesh-gate`:
+After wave generation, the centralized meta-repo gate workflow:
 
 1. Creates an actionable issue in each impacted target repo.
 2. Creates a linked visibility issue in the meta-repo.
