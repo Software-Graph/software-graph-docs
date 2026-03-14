@@ -4,42 +4,24 @@ These settings match the current Software Graph workflow while keeping room for 
 
 ## Scope
 
-Apply rules to `dev` and `main` across the org repos (or selected repos first if rolling out gradually).
-
-## Recommended Baseline (`dev`)
-
-Enable:
-
-- Require a pull request before merging
-- Require status checks to pass
-- Require conversation resolution before merging
-- Block force pushes
-- Restrict deletions
-
-Optional (enable when practical):
-
-- Require linear history
-- Dismiss stale approvals when new commits are pushed
-
-For solo development, required approvals can stay `0` initially if speed matters.
+Apply rules to `main` across the org repos (or selected repos first if rolling out gradually).
 
 ## Recommended Baseline (`main`)
-
-Enable all of the above, plus stricter promotion discipline:
 
 - Require status checks to pass
 - Require PR-only updates
 - Block force pushes
 - Restrict deletions
-
-Use `main` as promotion-only. No direct feature work there.
+- Require the stable repo gate for that repo:
+  - submodules: `CI / Main PR Gate`
+  - meta repo: `Meta CI / Main PR Gate`
 
 ## Status Checks to Require
 
 Use the checks that enforce your actual gates, for example:
 
-- service CI test job(s)
-- mesh gate job (where applicable)
+- `CI / Main PR Gate`
+- `Meta CI / Main PR Gate`
 
 Avoid requiring transient/non-deterministic checks.
 

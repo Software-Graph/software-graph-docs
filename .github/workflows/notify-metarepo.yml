@@ -1,7 +1,7 @@
-# Notify meta-repo when this repo's dev branch is updated
+# Notify meta-repo when this repo's main branch is updated
 #
 # This triggers the Software-Graph meta-repo to update its submodule ref,
-# so dev pushes automatically update the meta-repo's tracked dev pointer.
+# so main pushes automatically update the meta-repo's tracked main pointer.
 #
 # Requires: MESH_TOKEN secret (same token used for cross-repo operations)
 
@@ -10,7 +10,7 @@ name: Notify Meta-Repo
 on:
   push:
     branches:
-      - dev
+      - main
 
 concurrency:
   group: notify-metarepo-${{ github.ref_name }}
